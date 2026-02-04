@@ -1,24 +1,43 @@
 #include <SDL3/SDL.h>
 #include "SDL_Shapes.h"
 #include <Windows.h>
+#include <iostream>
 
 int main()
 {
 	SDL_Renderer* renderer = nullptr;
 	SDL_Window* window = nullptr;
 
-	SDL_CreateWindowAndRenderer("Test123", 1280, 720, SDL_WINDOW_BORDERLESS, &window, &renderer);
+	SDL_CreateWindowAndRenderer("2D SDL Shapes Library", 1280, 720, SDL_WINDOW_RESIZABLE, &window, &renderer);
 
-	SDL_Color color{ 255, 220, 200, 255 };
-	SDL_Color color2{ 200, 140, 155, 255 };
-	SDL_Color color3{ 100, 50, 100, 255 };
+	SDL_Color color{ 255, 0, 255, 255 };
 
-	SDL_Shapes::SDL_Circle circle(620.0, 200.0, 100, color);
-	SDL_Shapes::SDL_Circle circle1(220.0, 200.0, 200, color3);
-	SDL_Shapes::SDL_Circle circle2(920.0, 200.0, 70, color2);
 
-	SDL_Shapes::SDL_Rectangle rectangle(400, 400, 100, 50, color);
-	SDL_Shapes::SDL_Rectangle rectangle1(400, 400, 100, 50, color);
+	int total = 5000;
+	int perRow = 100;
+	double spacing = 10.0;
+
+	srand(time(0));
+	std::vector<SDL_Shapes::SDL_Circle> circles;
+
+	for (int i = 0; i < total; i++)
+	{
+		int row = i / perRow;
+		int col = i % perRow;
+
+		double x = col * spacing;
+		double y = row * spacing;
+
+		int r = rand() % 255;
+		int g = rand() % 255;
+		int b = rand() % 255;
+
+		int a = 255;
+		SDL_Color color{ r,g,b,a };
+
+		circles.emplace_back(x, y, 5, color);
+	}
+
 
 	bool running = true;
 	SDL_Event event;
@@ -36,12 +55,10 @@ int main()
 		}
 		SDL_RenderClear(renderer);
 
-		SDL_Shapes::SDL_DrawShape(renderer, circle);
-		SDL_Shapes::SDL_DrawShape(renderer, circle1);
-		SDL_Shapes::SDL_DrawShape(renderer, circle2);
-
-		SDL_Shapes::SDL_DrawShape(renderer, rectangle);
-		SDL_Shapes::SDL_DrawShape(renderer, rectangle1);
+		for (auto& circ : circles)
+		{
+			SDL_Shapes::SDL_DrawShape(renderer, circ);
+		}
 
 		SDL_RenderPresent(renderer);
 	}

@@ -3,26 +3,17 @@
 #include <map>
 #include <vector>
 
+
+
 namespace SDL_Shapes
 {
+	constexpr int Render_Resolution_Size = 512; // How big the texture will be in memory and quality of the texture
+
+	//Textures
+	extern SDL_Texture* rectangleTexture;
+	extern SDL_Texture* circleTexture;
+
 	class SDL_Shape;
-
-	struct CircleKey
-	{
-		double radius;
-		SDL_Color color;
-		SDL_Texture* texture;
-	};
-
-	struct RectangleKey
-	{
-		double width, height;
-		SDL_Color color;
-		SDL_Texture* texture;
-	};
-
-	extern std::vector<RectangleKey> rectangleTextures;
-	extern std::vector<CircleKey> circleTextures;
 
 	//Ptr and ref overload
 	void SDL_DrawShape(SDL_Renderer*, SDL_Shape& shape);
@@ -32,12 +23,12 @@ namespace SDL_Shapes
 	class SDL_Shape
 	{
 	protected:
-		bool Shape_CompareColors(SDL_Color other1, SDL_Color other2);
+		bool Shape_CompareColors(SDL_Color& other1, SDL_Color& other2);
 	public:
 		virtual void RenderShape(SDL_Renderer*);
 	};
 
-	//Different Shape classes
+	//Shape classes
 	class SDL_Circle : public SDL_Shape
 	{
 	private:
@@ -47,16 +38,16 @@ namespace SDL_Shapes
 
 	public:
 		double radius;
-		double centerX, centerY;
+		double positionX, positionY;
 
 		SDL_Circle(double posX, double posY, double circleRadius)
 		{
-			centerX = posX;
-			centerY = posY;
+			positionX = posX;
+			positionY = posY;
 			radius = circleRadius;
 
-			rect.x = centerX - radius;
-			rect.y = centerY - radius;
+			rect.x = positionX - radius;
+			rect.y = positionY - radius;
 			rect.h = radius * 2;
 			rect.w = radius * 2;
 
@@ -65,12 +56,12 @@ namespace SDL_Shapes
 
 		SDL_Circle(double posX, double posY, double circleRadius, SDL_Color circleColor)
 		{
-			centerX = posX;
-			centerY = posY;
+			positionX = posX;
+			positionY = posY;
 			radius = circleRadius;
 
-			rect.x = centerX - radius;
-			rect.y = centerY - radius;
+			rect.x = positionX - radius;
+			rect.y = positionY - radius;
 			rect.h = radius * 2;
 			rect.w = radius * 2;
 
@@ -105,10 +96,21 @@ namespace SDL_Shapes
 		SDL_Color color;
 		SDL_Texture* texture = nullptr;
 		SDL_FRect rect;
-	public:
 
-		SDL_Rectangle(double posX, double posY, double width, double height, SDL_Color squareColor)
+	public:
+		double width;
+		double height;
+		double positionX;
+		double positionY;
+
+		SDL_Rectangle(double posX, double posY, double w, double h, SDL_Color squareColor)
 		{
+			positionX = posX;
+			positionY = posY;
+
+			width = w;
+			height = h;
+
 			rect.x = posX;
 			rect.y = posY;
 			rect.w = width;
@@ -117,8 +119,14 @@ namespace SDL_Shapes
 			color = squareColor;
 		}
 
-		SDL_Rectangle(double posX, double posY, double width, double height)
+		SDL_Rectangle(double posX, double posY, double w, double h)
 		{
+			positionX = posX;
+			positionY = posY;
+
+			width = w;
+			height = h;
+
 			rect.x = posX;
 			rect.y = posY;
 			rect.w = width;

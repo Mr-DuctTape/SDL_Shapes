@@ -3,8 +3,8 @@
 #include <map>
 #include <Windows.h>
 
-std::vector<SDL_Shapes::CircleKey> SDL_Shapes::circleTextures;
-std::vector<SDL_Shapes::RectangleKey> SDL_Shapes::rectangleTextures;
+SDL_Texture* SDL_Shapes::circleTexture = nullptr;
+SDL_Texture* SDL_Shapes::rectangleTexture = nullptr;
 
 namespace SDL_Shapes
 {
@@ -26,11 +26,11 @@ namespace SDL_Shapes
 
 	}
 
-	bool SDL_Shape::Shape_CompareColors(SDL_Color other1, SDL_Color other2)
+	bool SDL_Shape::Shape_CompareColors(SDL_Color& other1, SDL_Color& other2)
 	{
-		if (other1.r == other2.r && 
-			other1.g == other2.g && 
-			other1.b == other2.b && 
+		if (other1.r == other2.r &&
+			other1.g == other2.g &&
+			other1.b == other2.b &&
 			other1.a == other2.a)
 			return true;
 
@@ -39,25 +39,47 @@ namespace SDL_Shapes
 
 	void SDL_Circle::RenderShape(SDL_Renderer* renderer)
 	{
-		//Check if texture already exists
-		for (auto& c : circleTextures)
+		if (rect.x != positionX || rect.y != positionY)
 		{
-			if (Shape_CompareColors(color, c.color) && c.radius == radius)
-			{
-				texture = c.texture;
-				SDL_RenderTexture(renderer, texture, nullptr, &rect);
-				return;
-			}
+			rect.x = positionX;
+			rect.y = positionY;
 		}
 
-		SDL_Color before{0,0,0,0};
+		if (rect.h != radius + radius || rect.w != radius + radius)
+		{
+			rect.h = radius + radius;
+			rect.w = radius + radius;
+		}
+
+		//Render texture
+		if (texture)
+		{
+			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+			SDL_RenderTexture(renderer, texture, nullptr, &rect);
+			return;
+		}
+		else if (circleTexture)
+		{
+			texture = circleTexture;
+			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+			SDL_RenderTexture(renderer, texture, nullptr, &rect);
+			return;
+		}
+
+
+		//Creates the texture
+		SDL_Color before{ 0,0,0,0 };
 		SDL_GetRenderDrawColor(renderer, &before.r, &before.g, &before.b, &before.a);
 
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, radius + radius, radius + radius);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, Render_Resolution_Size, Render_Resolution_Size);
+		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
+
+		std::cout << "Creating texture\n";
 
 		SDL_SetRenderTarget(renderer, texture);
-		SDL_RenderClear(renderer);
-		SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+		const double radius = (Render_Resolution_Size / 2) - 1;
 
 		int cX = radius;
 		int cY = radius;
@@ -85,12 +107,8 @@ namespace SDL_Shapes
 			x += 1;
 		}
 
-		CircleKey key;
-		key.color = color;
-		key.radius = radius;
-		key.texture = texture;
 
-		circleTextures.push_back(key);
+		circleTexture = texture;
 
 		SDL_SetRenderTarget(renderer, nullptr);
 		SDL_RenderTexture(renderer, texture, nullptr, &rect);
@@ -104,40 +122,55 @@ namespace SDL_Shapes
 
 	void SDL_Rectangle::RenderShape(SDL_Renderer* renderer)
 	{
-		for (auto& r : rectangleTextures)
+		if (rect.x != positionX || rect.y != positionY)
 		{
-			if (Shape_CompareColors(color, r.color) && r.height == rect.h && r.width == rect.w)
-			{
-				texture = r.texture;
-				SDL_RenderTexture(renderer, texture, nullptr, &rect);
-				return;
-			}
+			rect.x = positionX;
+			rect.y = positionY;
 		}
+
+		if (rect.h != height || rect.w != width)
+		{
+			rect.h = height;
+			rect.w = width;
+		}
+
+		//Render texture
+		if (texture)
+		{
+			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+			SDL_RenderTexture(renderer, texture, nullptr, &rect);
+			return;
+		}
+		else if (rectangleTexture)
+		{
+			texture = rectangleTexture;
+			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+			SDL_RenderTexture(renderer, texture, nullptr, &rect);
+			return;
+		}
+
 
 		SDL_Color before{ 0,0,0,0 };
 		SDL_GetRenderDrawColor(renderer, &before.r, &before.g, &before.b, &before.a);
 
-		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, rect.w, rect.h);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_TARGET, Render_Resolution_Size, Render_Resolution_Size);
+		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
 
 		SDL_SetRenderTarget(renderer, texture);
-		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-		for (int x = 0; x < rect.w; x++)
+		std::cout << "Creating texture\n";
+
+		for (int x = 0; x < Render_Resolution_Size; x++)
 		{
-			for (int y = 0; y < rect.h; y++)
+			for (int y = 0; y < Render_Resolution_Size; y++)
 			{
 				SDL_RenderPoint(renderer, x, y);
 			}
 		}
 
-		RectangleKey key;
-		key.color = color;
-		key.height = rect.h;
-		key.width = rect.w;
-		key.texture = texture;
+		rectangleTexture = texture;
 
-		rectangleTextures.push_back(key);
 		SDL_SetRenderTarget(renderer, nullptr);
 		SDL_RenderTexture(renderer, texture, nullptr, &rect);
 		SDL_SetRenderDrawColor(renderer, before.r, before.g, before.b, before.a);
@@ -145,22 +178,18 @@ namespace SDL_Shapes
 
 	void SDL_CleanTextureCache()
 	{
-		for (auto& c : circleTextures)
+		static int x;
+		if (circleTexture != nullptr)
 		{
-			if (c.texture != nullptr)
-			{
-				std::cout << "Cleaning Circle << " << c.texture << "\n";
-				SDL_DestroyTexture(c.texture);
-			}
+			x++;
+			std::cout << "Cleaning Circle << " << circleTexture << " : " << x << "\n";
+			SDL_DestroyTexture(circleTexture);
 		}
 
-		for (auto& r : rectangleTextures)
+		if (rectangleTexture != nullptr)
 		{
-			if (r.texture != nullptr)
-			{
-				std::cout << "Cleaning Square << " << r.texture << "\n";
-				SDL_DestroyTexture(r.texture);
-			}
+			std::cout << "Cleaning Square << " << rectangleTexture << "\n";
+			SDL_DestroyTexture(rectangleTexture);
 		}
 	}
 }
