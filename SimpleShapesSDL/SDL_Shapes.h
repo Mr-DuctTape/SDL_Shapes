@@ -9,15 +9,15 @@ namespace SDL_Shapes
 {
 	constexpr int Render_Resolution_Size = 512; // How big the texture will be in memory and quality of the texture
 
-	//Textures
-	extern SDL_Texture* rectangleTexture;
-	extern SDL_Texture* circleTexture;
-
+	//Class forward declarations
 	class SDL_Shape;
+	class SDL_Circle;
+	class SDL_Rectangle;
 
-	//Ptr and ref overload
-	void SDL_DrawShape(SDL_Renderer*, SDL_Shape& shape);
-	void SDL_DrawShape(SDL_Renderer*, SDL_Shape* shape);
+	//Ptr and ref overload, for specific shapes
+	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape& shape);
+	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape* shape);
+
 
 	//Base class
 	class SDL_Shape
@@ -75,6 +75,10 @@ namespace SDL_Shapes
 			color = circleColor;
 		}
 	};
+
+	//Textures
+	extern SDL_Texture* rectangleTexture;
+	extern SDL_Texture* circleTexture;
 
 	class SDL_Triangle : public SDL_Shape
 	{

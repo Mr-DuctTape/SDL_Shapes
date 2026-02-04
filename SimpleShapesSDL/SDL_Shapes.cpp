@@ -178,18 +178,18 @@ namespace SDL_Shapes
 
 	void SDL_CleanTextureCache()
 	{
-		static int x;
 		if (circleTexture != nullptr)
 		{
-			x++;
-			std::cout << "Cleaning Circle << " << circleTexture << " : " << x << "\n";
+			std::cout << "Cleaning Circle << " << circleTexture << "\n";
 			SDL_DestroyTexture(circleTexture);
+			circleTexture = nullptr;
 		}
 
 		if (rectangleTexture != nullptr)
 		{
 			std::cout << "Cleaning Square << " << rectangleTexture << "\n";
 			SDL_DestroyTexture(rectangleTexture);
+			rectangleTexture = nullptr;
 		}
 	}
 }

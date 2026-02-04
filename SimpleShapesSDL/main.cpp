@@ -13,8 +13,8 @@ int main()
 	SDL_Color color{ 255, 0, 255, 255 };
 
 
-	int total = 5000;
-	int perRow = 100;
+	int total = 55000;
+	int perRow = 300;
 	double spacing = 10.0;
 
 	srand(time(0));
@@ -35,7 +35,7 @@ int main()
 		int a = 255;
 		SDL_Color color{ r,g,b,a };
 
-		circles.emplace_back(x, y, 5, color);
+		circles.emplace_back(x, y, 4, color);
 	}
 
 
@@ -55,11 +55,9 @@ int main()
 		}
 		SDL_RenderClear(renderer);
 
-		for (auto& circ : circles)
-		{
-			SDL_Shapes::SDL_DrawShape(renderer, circ);
-		}
-
+		for(auto& c : circles)
+			SDL_Shapes::SDL_DrawShape(renderer, c);
+		
 		SDL_RenderPresent(renderer);
 	}
 
