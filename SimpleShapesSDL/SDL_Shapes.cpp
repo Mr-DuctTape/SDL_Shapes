@@ -8,9 +8,6 @@ SDL_Texture* SDL_Shapes::rectangleTexture = nullptr;
 
 namespace SDL_Shapes
 {
-	static std::vector<SDL_Vertex> shapeVerticies;
-	static std::vector<int> shapeIndices;
-
 	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape& shape)
 	{
 		shape.RenderShape(renderer);
@@ -112,6 +109,12 @@ namespace SDL_Shapes
 	{
 		static std::vector<SDL_FPoint> previousCirclePositions;
 		static std::vector<SDL_FPoint> previousRectanglePositions;
+
+		static std::vector<SDL_Vertex> circleVerticies;
+		static std::vector<SDL_Vertex> rectangleVerticies;
+
+		static std::vector<int> circleIndices;
+		static std::vector<int> rectangleIndices;
 	}
 
 	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles, std::vector<SDL_Rectangle>* rectangles)
@@ -131,17 +134,24 @@ namespace SDL_Shapes
 		if (!Initialzed_Geometry)
 		{
 			//Reserve extra space for verticies and indicies
-			shapeVerticies.reserve(400000 * 4);
-			shapeIndices.reserve(400000 * 6);
+			circleVerticies.reserve(200000 * 4);
+			rectangleVerticies.reserve(200000 * 4);
+			circleIndices.reserve(400000 * 6);
+			circleVerticies.reserve(400000 * 6);
 		}
 
 		// Rezise Vertices and indicies
 		if (circles && rectangles)
 		{
-			if (shapeVerticies.size() != (circles->size() * 4) + (rectangles->size() * 4))
+			if (circleVerticies.size() != (circles->size() * 4))
 			{
-				shapeVerticies.resize((circles->size() * 4) + (rectangles->size() * 4));
-				shapeIndices.resize((circles->size() * 6) + (rectangles->size() * 6));
+				circleVerticies.resize((circles->size() * 4));
+				circleIndices.resize((circles->size() * 6));
+			}
+			if (rectangleVerticies.size() != rectangles->size() * 4)
+			{
+				rectangleVerticies.resize((rectangles->size() * 4));
+				rectangleIndices.resize((rectangles->size() * 6));
 			}
 
 			if (previousCirclePositions.size() != circles->size()) //Resize positions
@@ -152,10 +162,10 @@ namespace SDL_Shapes
 		}
 		else if (circles && !rectangles)
 		{
-			if (shapeVerticies.size() != (circles->size() * 4))
+			if (circleVerticies.size() != (circles->size() * 4))
 			{
-				shapeVerticies.resize((circles->size() * 4));
-				shapeIndices.resize((circles->size() * 6));
+				circleVerticies.resize((circles->size() * 4));
+				circleIndices.resize((circles->size() * 6));
 			}
 
 			if (previousCirclePositions.size() != circles->size()) //Resize positions
@@ -163,10 +173,10 @@ namespace SDL_Shapes
 		}
 		else if (!circles && rectangles)
 		{
-			if (shapeVerticies.size() != (rectangles->size() * 4))
+			if (rectangleVerticies.size() != (rectangles->size() * 4))
 			{
-				shapeVerticies.resize((rectangles->size() * 4));
-				shapeIndices.resize((rectangles->size() * 6));
+				rectangleVerticies.resize((rectangles->size() * 4));
+				rectangleIndices.resize((rectangles->size() * 6));
 			}
 
 			if (previousRectanglePositions.size() != rectangles->size()) //Resize positions
@@ -191,10 +201,10 @@ namespace SDL_Shapes
 
 				SDL_FColor color{ circle.color.r / 255.0f, circle.color.g / 255.0f, circle.color.b / 255.0f, circle.color.a / 255.0f };
 
-				SDL_Vertex& v0 = shapeVerticies[i * 4 + 0];
-				SDL_Vertex& v1 = shapeVerticies[i * 4 + 1];
-				SDL_Vertex& v2 = shapeVerticies[i * 4 + 2];
-				SDL_Vertex& v3 = shapeVerticies[i * 4 + 3];
+				SDL_Vertex& v0 = circleVerticies[i * 4 + 0];
+				SDL_Vertex& v1 = circleVerticies[i * 4 + 1];
+				SDL_Vertex& v2 = circleVerticies[i * 4 + 2];
+				SDL_Vertex& v3 = circleVerticies[i * 4 + 3];
 
 				// Each circle is rendered as a quad (4 vertices).
 				// A quad is made of 2 triangles, and each triangle needs 3 indices ->6 indices total.
@@ -206,14 +216,14 @@ namespace SDL_Shapes
 				// i * 6 = starting index position in the index buffer
 
 				// Triangle 1: v0, v1, v2
-				shapeIndices[i * 6 + 0] = i * 4 + 0;
-				shapeIndices[i * 6 + 1] = i * 4 + 1;
-				shapeIndices[i * 6 + 2] = i * 4 + 2;
+				circleIndices[i * 6 + 0] = i * 4 + 0;
+				circleIndices[i * 6 + 1] = i * 4 + 1;
+				circleIndices[i * 6 + 2] = i * 4 + 2;
 
 				// Triangle 2: v2, v3, v0
-				shapeIndices[i * 6 + 3] = i * 4 + 2;
-				shapeIndices[i * 6 + 4] = i * 4 + 3;
-				shapeIndices[i * 6 + 5] = i * 4 + 0;
+				circleIndices[i * 6 + 3] = i * 4 + 2;
+				circleIndices[i * 6 + 4] = i * 4 + 3;
+				circleIndices[i * 6 + 5] = i * 4 + 0;
 
 				v0.position = { cX - radius , cY - radius }; // Top left 
 				v0.color = color;
@@ -235,16 +245,11 @@ namespace SDL_Shapes
 
 		if (rectangles)
 		{
-			const size_t IndiceOffset = circles ? circles->size() * 6 : 0;
-			const size_t VerticeOffset = circles ? circles->size() * 4 : 0;
-
-			size_t rectanglePosIndex = 0;
-
 			for (size_t i = 0; i < rectangles->size(); i++)
 			{
 				SDL_Rectangle& Rect = rectangles->at(i);
 
-				if (Initialzed_Geometry && Rect.positionX == previousRectanglePositions[rectanglePosIndex].x && Rect.positionY == previousRectanglePositions[rectanglePosIndex].y)
+				if (Initialzed_Geometry && Rect.positionX == previousRectanglePositions[i].x && Rect.positionY == previousRectanglePositions[i].y)
 					continue;
 
 				float cX = Rect.positionX;
@@ -252,15 +257,15 @@ namespace SDL_Shapes
 				float rW = Rect.width;
 				float rH = Rect.height;
 
-				previousRectanglePositions[rectanglePosIndex].x = Rect.positionX;
-				previousRectanglePositions[rectanglePosIndex].y = Rect.positionY;
+				previousRectanglePositions[i].x = Rect.positionX;
+				previousRectanglePositions[i].y = Rect.positionY;
 
 				SDL_FColor color{ Rect.color.r / 255.0f, Rect.color.g / 255.0f, Rect.color.b / 255.0f, Rect.color.a / 255.0f };
 
-				SDL_Vertex& v0 = shapeVerticies[VerticeOffset + i * 4 + 0];
-				SDL_Vertex& v1 = shapeVerticies[VerticeOffset + i * 4 + 1];
-				SDL_Vertex& v2 = shapeVerticies[VerticeOffset + i * 4 + 2];
-				SDL_Vertex& v3 = shapeVerticies[VerticeOffset + i * 4 + 3];
+				SDL_Vertex& v0 = rectangleVerticies[i * 4 + 0];
+				SDL_Vertex& v1 = rectangleVerticies[i * 4 + 1];
+				SDL_Vertex& v2 = rectangleVerticies[i * 4 + 2];
+				SDL_Vertex& v3 = rectangleVerticies[i * 4 + 3];
 
 				// Each Rectangle is rendered as a quad (4 vertices).
 				// A quad is made of 2 triangles, and each triangle needs 3 indices ->6 indices total.
@@ -272,14 +277,14 @@ namespace SDL_Shapes
 				// i * 6 = starting index position in the index buffer
 
 				// Triangle 1: v0, v1, v2
-				shapeIndices[IndiceOffset + i * 6 + 0] = VerticeOffset + i * 4 + 0;
-				shapeIndices[IndiceOffset + i * 6 + 1] = VerticeOffset + i * 4 + 1;
-				shapeIndices[IndiceOffset + i * 6 + 2] = VerticeOffset + i * 4 + 2;
+				rectangleIndices[i * 6 + 0] = i * 4 + 0;
+				rectangleIndices[i * 6 + 1] = i * 4 + 1;
+				rectangleIndices[i * 6 + 2] = i * 4 + 2;
 
 				// Triangle 2: v2, v3, v0
-				shapeIndices[IndiceOffset + i * 6 + 3] = VerticeOffset + i * 4 + 2;
-				shapeIndices[IndiceOffset + i * 6 + 4] = VerticeOffset + i * 4 + 3;
-				shapeIndices[IndiceOffset + i * 6 + 5] = VerticeOffset + i * 4 + 0;
+				rectangleIndices[i * 6 + 3] = i * 4 + 2;
+				rectangleIndices[i * 6 + 4] = i * 4 + 3;
+				rectangleIndices[i * 6 + 5] = i * 4 + 0;
 
 				v0.position = { cX - rW , cY - rH }; // Top left 
 				v0.color = color;
@@ -296,12 +301,14 @@ namespace SDL_Shapes
 				v3.position = { cX - rW, cY + rH }; // Bottom left
 				v3.tex_coord = { 0,1 };
 				v3.color = color;
-
-				rectanglePosIndex++;
 			}
 		}
 
-		SDL_RenderGeometry(renderer, circleTexture, shapeVerticies.data(), shapeVerticies.size(), shapeIndices.data(), shapeIndices.size());
+		if(circles)
+			SDL_RenderGeometry(renderer, circleTexture, circleVerticies.data(), circleVerticies.size(), circleIndices.data(), circleIndices.size());
+		if(rectangles)
+			SDL_RenderGeometry(renderer, nullptr, rectangleVerticies.data(), rectangleVerticies.size(), rectangleIndices.data(), rectangleIndices.size());
+
 		Initialzed_Geometry = true;
 	}
 

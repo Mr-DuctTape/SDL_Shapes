@@ -16,11 +16,10 @@ int main()
 
 
 	int total = 100000;
-	int perRow = 450;
-	double spacing = 1.0;
+	int perRow = 300;
+	double spacing = 2.0;
 	std::vector<SDL_Shapes::SDL_Rectangle> rectangles;
 	std::vector<SDL_Shapes::SDL_Circle> circles;
-
 
 	for (int i = 0; i < total; i++)
 	{
@@ -37,11 +36,11 @@ int main()
 		int a = 255;
 		SDL_Color color{ r,g,b,a };
 
-		SDL_Shapes::SDL_Rectangle c{ x,y, 1, 1, color};
+		SDL_Shapes::SDL_Rectangle c{ x, y, 1, 1, color};
 		rectangles.push_back(c);
 	}
 
-	for (int i = total; i < total * 2; i++)
+	for (int i = 0; i < total; i++)
 	{
 		int row = i / perRow;
 		int col = i % perRow;
@@ -56,7 +55,7 @@ int main()
 		int a = 255;
 		SDL_Color color{ r,g,b,a };
 
-		SDL_Shapes::SDL_Circle c{ x, y, 1, color};
+		SDL_Shapes::SDL_Circle c{ x, y, 1, color };
 		circles.push_back(c);
 	}
 
@@ -82,17 +81,17 @@ int main()
 
 		SDL_RenderClear(renderer);
 
-		//for (auto& c : rectangles)
-		//{
-		//	c.positionX += rand() % 2;
-		//	c.positionY += rand() % 2;
-		//}
+		for (auto& c : circles)
+		{
+			c.positionX += rand() % 2;
+			c.positionY += rand() % 2;
+		}
 
-		//for (auto& c : circles)
-		//{/*
-		//	c.positionX += rand() % 2 + 1;
-		//	c.positionY += rand() % 2;*/
-		//}
+		for (auto& c : rectangles)
+		{
+			c.positionX += rand() % 2;
+			c.positionY += rand() % 2;
+		}
 
 		SDL_Shapes::SDL_DrawAllShapes(renderer, &circles, &rectangles);
 		
