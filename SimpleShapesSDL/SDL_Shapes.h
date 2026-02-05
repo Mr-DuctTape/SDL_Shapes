@@ -7,21 +7,42 @@
 
 namespace SDL_Shapes
 {
-	constexpr int Render_Resolution_Size = 512; // How big the texture will be in memory and quality of the texture
-
 	//Class forward declarations
 	class SDL_Shape;
 	class SDL_Circle;
 	class SDL_Rectangle;
 
-	extern std::vector<SDL_Vertex> circleVerticies;
-	extern std::vector<int> circleIndices;
+	constexpr int Render_Resolution_Size = 512; // How big the texture will be in memory and quality of the texture
 
-	//Ptr and ref overload, for specific shapes
+	//Textures
+	extern SDL_Texture* rectangleTexture;
+	extern SDL_Texture* circleTexture;
+
+	/**
+	 *  SDL_DrawShape
+	 *
+	 *	Draws singular shape passed into the parameter.
+	 *  Much slower than SDL_DrawAllShapes for larger numbers of shapes.
+	 *
+	 * @param renderer, SDL_Renderer for the window.
+	 * @param circles, Vector of circles to draw (nullptr if not used).
+	 * @param rectangles, Vector of rectangles to draw (nullptr if not used).
+	 * @param triangles, Vector of triangles to draw (nullptr if not used).
+	 */
 	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape& shape);
 	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape* shape);
 
-	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles);
+	/**
+	 * SDL_DrawAllShapes
+	 *
+	 * Draw all shapes using GPU batching (much faster than SDL_DrawShape for large numbers of shapes).
+	 *
+	 * @param renderer, SDL_Renderer for the window.
+	 * @param circles, Vector of circles to draw (nullptr if not used).
+	 * @param rectangles, Vector of rectangles to draw (nullptr if not used).
+	 * @param triangles, Vector of triangles to draw (nullptr if not used).
+	 */
+	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles, std::vector<SDL_Rectangle>* rectangles);
 
 	//Base class
 	class SDL_Shape
@@ -79,10 +100,6 @@ namespace SDL_Shapes
 		}
 	};
 
-	//Textures
-	extern SDL_Texture* rectangleTexture;
-	extern SDL_Texture* circleTexture;
-
 	class SDL_Triangle : public SDL_Shape
 	{
 	private:
@@ -99,12 +116,12 @@ namespace SDL_Shapes
 
 	class SDL_Rectangle : public SDL_Shape
 	{
-	private: 
-		SDL_Color color;
-		SDL_Texture* texture = nullptr;
+	private:
 		SDL_FRect rect;
+		SDL_Texture* texture = nullptr;
 
 	public:
+		SDL_Color color;
 		double width;
 		double height;
 		double positionX;
