@@ -14,10 +14,14 @@ namespace SDL_Shapes
 	class SDL_Circle;
 	class SDL_Rectangle;
 
+	extern std::vector<SDL_Vertex> circleVerticies;
+	extern std::vector<int> circleIndices;
+
 	//Ptr and ref overload, for specific shapes
 	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape& shape);
 	void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape* shape);
 
+	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles);
 
 	//Base class
 	class SDL_Shape
@@ -32,11 +36,11 @@ namespace SDL_Shapes
 	class SDL_Circle : public SDL_Shape
 	{
 	private:
-		SDL_Color color;
 		SDL_Texture* texture = nullptr;
 		SDL_FRect rect;
 
 	public:
+		SDL_Color color;
 		double radius;
 		double positionX, positionY;
 
@@ -45,7 +49,6 @@ namespace SDL_Shapes
 			positionX = posX;
 			positionY = posY;
 			radius = circleRadius;
-
 			rect.x = positionX - radius;
 			rect.y = positionY - radius;
 			rect.h = radius * 2;

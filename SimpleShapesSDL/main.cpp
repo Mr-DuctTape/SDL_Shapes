@@ -8,17 +8,21 @@ int main()
 	SDL_Renderer* renderer = nullptr;
 	SDL_Window* window = nullptr;
 
-	SDL_CreateWindowAndRenderer("2D SDL Shapes Library", 1280, 720, SDL_WINDOW_RESIZABLE, &window, &renderer);
+	window = SDL_CreateWindow("2D SDL Shapes Library", 1280, 720, SDL_WINDOW_RESIZABLE);
 
-	SDL_Color color{ 255, 0, 255, 255 };
+	renderer = SDL_CreateRenderer(window, NULL);
+
+	SDL_Color color{ 255, 25, 255, 255 };
 
 
-	int total = 55000;
-	int perRow = 300;
-	double spacing = 10.0;
+	int total = 100000;
+	int perRow = 450;
+	double spacing = 2.0;
+	SDL_Shapes::SDL_Circle circ0{ 600, 300, 50 };
+	SDL_Shapes::SDL_DrawShape(renderer, &circ0);
 
-	srand(time(0));
 	std::vector<SDL_Shapes::SDL_Circle> circles;
+
 
 	for (int i = 0; i < total; i++)
 	{
@@ -35,12 +39,17 @@ int main()
 		int a = 255;
 		SDL_Color color{ r,g,b,a };
 
-		circles.emplace_back(x, y, 4, color);
+		SDL_Shapes::SDL_Circle c{ x, y, 1.0, color };
+		circles.push_back(c);
 	}
+
+	srand(time(0));
 
 
 	bool running = true;
 	SDL_Event event;
+
+	std::cout << circles.size() << "\n";
 
 	while (running)
 	{
@@ -53,10 +62,16 @@ int main()
 				running = false;
 			}
 		}
+
 		SDL_RenderClear(renderer);
 
-		for(auto& c : circles)
-			SDL_Shapes::SDL_DrawShape(renderer, c);
+		for (auto& c : circles)
+		{
+			c.positionX += rand() % 2;
+			c.positionY += rand() % 2;
+		}
+
+		SDL_Shapes::SDL_DrawAllShapes(renderer, &circles);
 		
 		SDL_RenderPresent(renderer);
 	}
