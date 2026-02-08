@@ -3,69 +3,59 @@
 #include <Windows.h>
 #include <iostream>
 
+constexpr int winx = 1280, winy = 720;
+
 int main()
 {
 	SDL_Renderer* renderer = nullptr;
 	SDL_Window* window = nullptr;
 
-	window = SDL_CreateWindow("2D SDL Shapes Library", 1280, 720, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("2D SDL Shapes Library", 1280, 920, SDL_WINDOW_RESIZABLE);
 
 	renderer = SDL_CreateRenderer(window, NULL);
 
 	SDL_Color color{ 255, 25, 255, 255 };
 
-
-	int total = 100000;
-	int perRow = 300;
+	int total = 200000;
+	int perRow = 500;
 	double spacing = 2.0;
-	std::vector<SDL_Shapes::SDL_Rectangle> rectangles;
-	std::vector<SDL_Shapes::SDL_Circle> circles;
 
-	for (int i = 0; i < total; i++)
-	{
-		int row = i / perRow;
-		int col = i % perRow;
 
-		double x = col * spacing;
-		double y = row * spacing;
+	SDL_Shapes::SDL_Rectangle trg{ 600, 300, 100,100 };
+	SDL_Shapes::SDL_Circle circ{ 400, 200, 100 };
 
-		int r = rand() % 255;
-		int g = rand() % 255;
-		int b = rand() % 255;
+	std::vector<SDL_Shapes::SDL_Rectangle> rectang;
 
-		int a = 255;
-		SDL_Color color{ r,g,b,a };
-
-		SDL_Shapes::SDL_Rectangle c{ x, y, 1, 1, color};
-		rectangles.push_back(c);
-	}
-
-	for (int i = 0; i < total; i++)
-	{
-		int row = i / perRow;
-		int col = i % perRow;
-
-		double x = col * spacing;
-		double y = row * spacing;
-
-		int r = rand() % 255;
-		int g = rand() % 255;
-		int b = rand() % 255;
-
-		int a = 255;
-		SDL_Color color{ r,g,b,a };
-
-		SDL_Shapes::SDL_Circle c{ x, y, 1, color };
-		circles.push_back(c);
-	}
+	//rectang.push_back(trg);
 
 	srand(time(0));
+
+	for (int i = 0; i < total; i++)
+	{
+	    int row = i / perRow;
+		int col = i % perRow;
+
+		double x = col * spacing;
+		double y = row * spacing;
+
+		int r = rand() % 255;
+		int g = rand() % 255;
+		int b = rand() % 255;
+
+		int a = 255;
+		SDL_Color color{ r,g,b,a };
+
+		SDL_Shapes::SDL_Rectangle c{ x,y, 1, 1 };
+		rectang.push_back(c);
+	}
+
+	std::cout << rectang.size() << "\n";
 
 
 	bool running = true;
 	SDL_Event event;
-	std::cout << rectangles.size() << "\n";
-	std::cout << circles.size() << "\n";
+
+	int Render_Resolution_Size = SDL_Shapes::Render_Resolution_Size;
 
 	while (running)
 	{
@@ -78,23 +68,15 @@ int main()
 				running = false;
 			}
 		}
-
 		SDL_RenderClear(renderer);
 
-		for (auto& c : circles)
+		for (auto& tr : rectang)
 		{
-			c.positionX += rand() % 2;
-			c.positionY += rand() % 2;
+			tr.rotation++;
 		}
 
-		for (auto& c : rectangles)
-		{
-			c.positionX += rand() % 2;
-			c.positionY += rand() % 2;
-		}
+		SDL_Shapes::SDL_DrawAllShapes(renderer, nullptr, &rectang, nullptr);
 
-		SDL_Shapes::SDL_DrawAllShapes(renderer, &circles, &rectangles);
-		
 		SDL_RenderPresent(renderer);
 	}
 
