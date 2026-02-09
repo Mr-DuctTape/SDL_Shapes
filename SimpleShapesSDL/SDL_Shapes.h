@@ -2,8 +2,6 @@
 #include <SDL3/SDL.h>
 #include <vector>
 
-
-
 namespace SDL_Shapes
 {
 	//Class forward declarations
@@ -14,8 +12,8 @@ namespace SDL_Shapes
 
 	// How big the texture will be in memory, quality of the texture. Could effect performance in certain scenarios
 	// Texture is N*N, example: 312*312
-	// Recommended values: 1028, 512, 256
-	constexpr int Render_Resolution_Size = 256; 
+	// Recommended values: 2048, 1024, 512
+	constexpr int Render_Resolution_Size = 1024; 
 
 	//Textures
 	extern SDL_Texture* rectangleTexture;
@@ -43,6 +41,7 @@ namespace SDL_Shapes
 	//If the shapes are different it's at worst 1 drawcall per different shape 
 	//(1 for triangles, 1 for squares, 1 for circles etc..)
 	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles, std::vector<SDL_Rectangle>* rectangles, std::vector<SDL_Triangle>* triangles);
+	void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle*>* circles, std::vector<SDL_Rectangle*>* rectangles, std::vector<SDL_Triangle*>* triangles);
 
 	//Base class
 	class SDL_Shape
@@ -50,13 +49,14 @@ namespace SDL_Shapes
 	protected:
 		SDL_FColor fColor = { 1.0f,1.0f,1.0f,1.0f };
 
-		bool Shape_CompareColors(SDL_Color& other1, SDL_Color& other2);
+		bool SDL_CompareColors(SDL_Color& other1, SDL_Color& other2);
 
 		virtual void RenderShape(SDL_Renderer*);
 
 		friend void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape& shape);
 		friend void SDL_DrawShape(SDL_Renderer* renderer, SDL_Shape* shape);
 		friend void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle>* circles, std::vector<SDL_Rectangle>* rectangles, std::vector<SDL_Triangle>* triangles);
+		friend void SDL_DrawAllShapes(SDL_Renderer* renderer, std::vector<SDL_Circle*>* circles, std::vector<SDL_Rectangle*>* rectangles, std::vector<SDL_Triangle*>* triangles);
 
 	public:
 		SDL_FRect rect{};
@@ -66,13 +66,16 @@ namespace SDL_Shapes
 	//Shape classes
 	class SDL_Circle : public SDL_Shape
 	{
+	private:
+		SDL_FPoint center;
+	protected:
+		SDL_Color color;
 	public:
 		float radius;
 		float positionX, positionY;
 		float rotation = 0;
-		SDL_Color color;
 
-		SDL_Circle(double posX, double posY, double circleRadius)
+		SDL_Circle(float posX, float posY, float circleRadius)
 		{
 			positionX = posX;
 			positionY = posY;
@@ -81,12 +84,15 @@ namespace SDL_Shapes
 			rect.y = positionY - radius;
 			rect.h = radius * 2;
 			rect.w = radius * 2;
+
+
+			center = { radius, radius};
 
 			color = SDL_Color{ 255,255,255,255 };
 			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
 
-		SDL_Circle(double posX, double posY, double circleRadius, SDL_Color circleColor)
+		SDL_Circle(float posX, float posY, float circleRadius, SDL_Color circleColor)
 		{
 			positionX = posX;
 			positionY = posY;
@@ -96,7 +102,8 @@ namespace SDL_Shapes
 			rect.y = positionY - radius;
 			rect.h = radius * 2;
 			rect.w = radius * 2;
-			
+
+			center = { radius, radius };
 			color = circleColor;
 			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
@@ -106,13 +113,15 @@ namespace SDL_Shapes
 		inline void set_color(const SDL_Color& circleColor)
 		{
 			color = circleColor;
+			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
 	};
 
 	class SDL_Triangle : public SDL_Shape
 	{
-	public:
+	protected:
 		SDL_Color color;
+	public:
 		float height;
 		float width;
 		float positionX, positionY;
@@ -127,7 +136,7 @@ namespace SDL_Shapes
 			rect.x = positionX;
 			rect.y = positionY;
 		}
-		SDL_Triangle(double h, double w, float x, float y)
+		SDL_Triangle(float h, float w, float x, float y)
 			: height(h), width(w), positionX(x), positionY(y)
 		{
 			color = SDL_Color{ 255,255,255,255 };
@@ -137,23 +146,29 @@ namespace SDL_Shapes
 			rect.x = positionX;
 			rect.y = positionY;
 		}
+
 		void RenderShape(SDL_Renderer* renderer) override;
+
 		inline void set_color(SDL_Color triangleColor)
 		{
 			color = triangleColor;
+			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
 	};
 
 	class SDL_Rectangle : public SDL_Shape
 	{
-	public:
+	private:
+		SDL_FPoint center;
+	protected:
 		SDL_Color color;
+	public:
 		float width;
 		float height;
 		float positionX, positionY;
 		float rotation = 0;
 
-		SDL_Rectangle(double posX, double posY, double w, double h, SDL_Color squareColor)
+		SDL_Rectangle(float posX, float posY, float w, float h, SDL_Color squareColor)
 		{
 			positionX = posX;
 			positionY = posY;
@@ -166,10 +181,11 @@ namespace SDL_Shapes
 			rect.w = width;
 			rect.h = height;
 
+			center = {rect.w / 2, rect.h / 2};
 			color = squareColor;
 		}
 
-		SDL_Rectangle(double posX, double posY, double w, double h)
+		SDL_Rectangle(float posX, float posY, float w, float h)
 		{
 			positionX = posX;
 			positionY = posY;
@@ -182,13 +198,16 @@ namespace SDL_Shapes
 			rect.w = width;
 			rect.h = height;
 
+			center = { rect.w / 2, rect.h / 2 };
 			color = SDL_Color{ 255,255,255,255 };
 		}
 
 		void RenderShape(SDL_Renderer* renderer) override;
+
 		inline void set_color(SDL_Color rectangleColor)
 		{
 			color = rectangleColor;
+			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
 	};
 
