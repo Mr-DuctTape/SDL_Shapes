@@ -49,8 +49,11 @@ The library is still in early development, but the following results were record
 - CPU: Intel i7-8650U
 
 **Results**
-- 200k non-moving rectangles (batched): **60+ FPS** (vsync limited)
-- 200k moving rectangles (batched): **~47–48 FPS**
+- 200k non-moving rectangles (SDL_DrawShape): **~27-28 FPS**
+- 200k moving rectangles (SDL_DrawShape): **~23–24 FPS**
+
+- 200k non-moving rectangles (SDL_DrawAllShapes): **60+ FPS** (vsync limited)
+- 200k moving rectangles (SDL_DrawAllShapes): **~47–48 FPS**
 
 The worst-case scenario is when all shapes are moving or rotating, as their vertices must be recalculated each frame. Static shapes are significantly cheaper to render due to reduced vertex updates.
 
