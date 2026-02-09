@@ -16,27 +16,24 @@ int main()
 
 	SDL_Color color{ 255, 25, 255, 255 };
 
-	int total = 200000;
-	int perRow = 500;
-	double spacing = 2.0;
+	int total = 400000;
+	int perRow = 800;
+	double spacing = 1.0;
 
 
-	SDL_Shapes::SDL_Rectangle trg{ 600, 300, 100,100 };
-	SDL_Shapes::SDL_Circle circ{ 400, 200, 100 };
+	SDL_Shapes::SDL_Triangle trg{ 100, 100, 300, 300 };
 
-	std::vector<SDL_Shapes::SDL_Rectangle> rectang;
-
-	//rectang.push_back(trg);
+	std::vector<SDL_Shapes::SDL_Triangle> triangles;
 
 	srand(time(0));
 
-	for (int i = 0; i < total; i++)
+	/*for (int i = 0; i < total; i++)
 	{
-	    int row = i / perRow;
+		int row = i / perRow;
 		int col = i % perRow;
 
-		double x = col * spacing;
-		double y = row * spacing;
+		float x = col * spacing;
+		float y = row * spacing;
 
 		int r = rand() % 255;
 		int g = rand() % 255;
@@ -45,17 +42,22 @@ int main()
 		int a = 255;
 		SDL_Color color{ r,g,b,a };
 
-		SDL_Shapes::SDL_Rectangle c{ x,y, 1, 1 };
-		rectang.push_back(c);
-	}
+		SDL_Shapes::SDL_Triangle c{ x, y, 2, 2, color };
+		triangles.push_back(c);
+	}*/
 
-	std::cout << rectang.size() << "\n";
 
 
 	bool running = true;
 	SDL_Event event;
 
 	int Render_Resolution_Size = SDL_Shapes::Render_Resolution_Size;
+
+	std::vector<SDL_Shapes::SDL_Rectangle> rectangles;
+
+	std::vector<SDL_Shapes::SDL_Circle> c;
+	SDL_Shapes::SDL_Circle circ{ 300, 300, 100 };
+	c.push_back(circ);
 
 	while (running)
 	{
@@ -70,12 +72,12 @@ int main()
 		}
 		SDL_RenderClear(renderer);
 
-		for (auto& tr : rectang)
+		for (size_t i = 0; i < 1; i++)
 		{
-			tr.rotation++;
+			c[i].rotation++;
 		}
-
-		SDL_Shapes::SDL_DrawAllShapes(renderer, nullptr, &rectang, nullptr);
+	  
+		SDL_Shapes::SDL_DrawAllShapes(renderer, &c, nullptr, nullptr);
 
 		SDL_RenderPresent(renderer);
 	}
