@@ -61,6 +61,8 @@ namespace SDL_Shapes
 	public:
 		SDL_FRect rect{};
 		SDL_Texture* texture = nullptr;
+
+		virtual ~SDL_Shape() = default;
 	};
 
 	//Shape classes

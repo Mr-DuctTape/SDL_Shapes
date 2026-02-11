@@ -717,9 +717,7 @@ namespace SDL_Shapes
 			return;
 		}
 		else
-		{
 			triangleTexture = SDL_CreateTriangleTexture(renderer);
-		}
 	}
 
 	void SDL_Rectangle::RenderShape(SDL_Renderer* renderer)
