@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <vector>
+#include <memory>
 
 namespace SDL_Shapes
 {
@@ -16,9 +17,9 @@ namespace SDL_Shapes
 	constexpr int Render_Resolution_Size = 1024; 
 
 	//Textures
-	extern SDL_Texture* rectangleTexture;
-	extern SDL_Texture* circleTexture;
-	extern SDL_Texture* triangleTexture;
+	extern std::unique_ptr<SDL_Texture> rectangleTexture;
+	extern std::unique_ptr<SDL_Texture> circleTexture;
+	extern std::unique_ptr<SDL_Texture> triangleTexture;
 
 	/**
 	 *  SDL_DrawShape
@@ -212,6 +213,4 @@ namespace SDL_Shapes
 			fColor = { color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f };
 		}
 	};
-
-	void SDL_CleanTextureCache();
 }

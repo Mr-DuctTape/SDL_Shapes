@@ -1,9 +1,9 @@
 #include "SDL_Shapes.h"
 #include <iostream>
 
-SDL_Texture* SDL_Shapes::circleTexture = nullptr;
-SDL_Texture* SDL_Shapes::rectangleTexture = nullptr;
-SDL_Texture* SDL_Shapes::triangleTexture = nullptr;
+std::unique_ptr<SDL_Texture> SDL_Shapes::circleTexture = nullptr;
+std::unique_ptr<SDL_Texture> SDL_Shapes::rectangleTexture = nullptr;
+std::unique_ptr<SDL_Texture> SDL_Shapes::triangleTexture = nullptr;
 
 namespace SDL_Shapes
 {
@@ -159,7 +159,7 @@ namespace SDL_Shapes
 
 		if (!circleTexture)
 		{
-			circleTexture = SDL_CreateCircleTexture(renderer);
+			circleTexture = std::unique_ptr<SDL_Texture>(SDL_CreateCircleTexture(renderer));
 		}
 
 		if (!Initialzed_Geometry)
@@ -392,7 +392,7 @@ namespace SDL_Shapes
 		}
 
 		if (circles)
-			SDL_RenderGeometry(renderer, circleTexture, circleVerticies.data(), circleVerticies.size(), circleIndices.data(), circleIndices.size());
+			SDL_RenderGeometry(renderer, circleTexture.get(), circleVerticies.data(), circleVerticies.size(), circleIndices.data(), circleIndices.size());
 		if (rectangles)
 			SDL_RenderGeometry(renderer, nullptr, rectangleVerticies.data(), rectangleVerticies.size(), rectangleIndices.data(), rectangleIndices.size());
 		if (triangles)
@@ -405,7 +405,7 @@ namespace SDL_Shapes
 
 		if (!circleTexture)
 		{
-			circleTexture = SDL_CreateCircleTexture(renderer);
+			circleTexture = std::unique_ptr<SDL_Texture>(SDL_CreateCircleTexture(renderer));
 		}
 
 		if (!Initialzed_Geometry)
@@ -637,7 +637,7 @@ namespace SDL_Shapes
 		}
 
 		if (circles)
-			SDL_RenderGeometry(renderer, circleTexture, circleVerticies.data(), circleVerticies.size(), circleIndices.data(), circleIndices.size());
+			SDL_RenderGeometry(renderer, circleTexture.get(), circleVerticies.data(), circleVerticies.size(), circleIndices.data(), circleIndices.size());
 		if (rectangles)
 			SDL_RenderGeometry(renderer, nullptr, rectangleVerticies.data(), rectangleVerticies.size(), rectangleIndices.data(), rectangleIndices.size());
 		if (triangles)
@@ -677,18 +677,18 @@ namespace SDL_Shapes
 		if (texture)
 		{
 			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
-			SDL_RenderTextureRotated(renderer, circleTexture, NULL, &rect, rotation, &center, SDL_FLIP_NONE);
+			SDL_RenderTextureRotated(renderer, circleTexture.get(), NULL, &rect, rotation, &center, SDL_FLIP_NONE);
 			return;
 		}
 		else if (circleTexture)
 		{
-			texture = circleTexture;
+			texture = circleTexture.get();
 			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
-			SDL_RenderTextureRotated(renderer, circleTexture, NULL, &rect, rotation, &center, SDL_FLIP_NONE);
+			SDL_RenderTextureRotated(renderer, circleTexture.get(), NULL, &rect, rotation, &center, SDL_FLIP_NONE);
 			return;
 		}
 		else
-			circleTexture = SDL_CreateCircleTexture(renderer);
+			circleTexture = std::unique_ptr<SDL_Texture>(SDL_CreateCircleTexture(renderer));
 	}
 
 	void SDL_Triangle::RenderShape(SDL_Renderer* renderer)
@@ -711,13 +711,13 @@ namespace SDL_Shapes
 		}
 		else if (triangleTexture)
 		{
-			texture = triangleTexture;
+			texture = triangleTexture.get();
 			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
 			SDL_RenderTextureRotated(renderer, texture, nullptr, &rect, rotation, &center, SDL_FLIP_NONE);
 			return;
 		}
 		else
-			triangleTexture = SDL_CreateTriangleTexture(renderer);
+			triangleTexture = std::unique_ptr<SDL_Texture>(SDL_CreateTriangleTexture(renderer));
 	}
 
 	void SDL_Rectangle::RenderShape(SDL_Renderer* renderer)
@@ -743,27 +743,12 @@ namespace SDL_Shapes
 		}
 		else if (rectangleTexture)
 		{
-			texture = rectangleTexture;
+			texture = rectangleTexture.get();
 			SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
 			SDL_RenderTextureRotated(renderer, texture, nullptr, &rect, rotation, &center, SDL_FLIP_NONE);
 			return;
 		}
 		else
-			rectangleTexture = SDL_CreateRectangleTexture(renderer);
-	}
-
-	void SDL_CleanTextureCache()
-	{
-		if (circleTexture != nullptr)
-		{
-			SDL_DestroyTexture(circleTexture);
-			circleTexture = nullptr;
-		}
-
-		if (rectangleTexture != nullptr)
-		{
-			SDL_DestroyTexture(rectangleTexture);
-			rectangleTexture = nullptr;
-		}
+			rectangleTexture = std::unique_ptr<SDL_Texture>(SDL_CreateRectangleTexture(renderer));
 	}
 }

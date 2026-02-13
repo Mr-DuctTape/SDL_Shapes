@@ -105,7 +105,5 @@ int main()
 		SDL_RenderPresent(renderer);
 	}
 
-	SDL_Shapes::SDL_CleanTextureCache();
-
 	return 0;
 }
